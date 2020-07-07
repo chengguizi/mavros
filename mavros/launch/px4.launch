@@ -2,10 +2,10 @@
 	<!-- vim: set ft=xml noet : -->
 	<!-- example launch script for PX4 based FCU's -->
 
-	<arg name="fcu_url" default="/dev/ttyACM0:57600" />
-	<arg name="gcs_url" default="" />
-	<arg name="tgt_system" default="1" />
-	<arg name="tgt_component" default="1" />
+	<arg name="fcu_url" default="/dev/ttyTHS1:921600" />
+	<arg name="gcs_url" default="udp://0.0.0.0:14535@" />
+	<arg name="tgt_system" default="23" />
+	<arg name="tgt_component" default="23" />
 	<arg name="log_output" default="screen" />
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />
