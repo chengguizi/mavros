@@ -298,15 +298,7 @@ private:
 						mtime.time_unix_usec / 1000000,		// t_sec
 						(mtime.time_unix_usec % 1000000) * 1000);	// t_nsec
 			
-			ros::Time stamp;
-			if (clock_source == "monotonic"){
-				stamp.fromNSec(get_monotonic_now());
-			}else if (clock_source == "realtime"){
-				stamp = ros::Time::now();
-			}else
-				throw std::runtime_error("Unkown Clock Source");
-
-			time_unix->header.stamp = stamp;
+			time_unix->header.stamp = ros::Time::now();
 			time_unix->time_ref = time_ref;
 			time_unix->source = time_ref_source;
 
