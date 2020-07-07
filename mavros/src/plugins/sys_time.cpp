@@ -328,7 +328,8 @@ private:
 		else if (tsync.tc1 > 0) {
 			// Time offset between this system and the remote system is calculated assuming RTT for
 			// the timesync packet is roughly equal both ways.
-			add_timesync_observation((tsync.ts1 + now_ns - tsync.tc1 * 2) / 2, tsync.ts1, tsync.tc1);
+			int64_t midway_ns = (tsync.ts1 + (int64_t)now_ns) / 2; // implicit conversion to int64, from uint64
+			add_timesync_observation(midway_ns - tsync.tc1, tsync.ts1, tsync.tc1);
 		}
 	}
 
