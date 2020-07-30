@@ -467,7 +467,7 @@ private:
 	int gps_fix_type;
 	int gps_satellites_visible;
 
-	std::atomic<uint64_t> time_offset;
+	std::atomic<int64_t> time_offset;
 	timesync_mode tsync_mode;
 
 	std::atomic<bool> fcu_caps_known;

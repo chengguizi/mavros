@@ -31,24 +31,20 @@ static inline ros::Time ros_time_from_ns(const uint64_t stamp_ns) {
 
 ros::Time UAS::synchronise_stamp(uint32_t time_boot_ms) {
 	// copy offset from atomic var
-	uint64_t offset_ns = time_offset;
+	int64_t offset_ns = time_offset;
 
-	if (offset_ns > 0 || tsync_mode == timesync_mode::PASSTHROUGH) {
-		uint64_t stamp_ns = static_cast<uint64_t>(time_boot_ms) * 1000000UL + offset_ns;
-		return ros_time_from_ns(stamp_ns);
-	}
-	else
-		return ros::Time::now();
+	// offset can be either positive or negative
+
+	uint64_t stamp_ns = static_cast<uint64_t>(time_boot_ms) * 1000000UL + offset_ns;
+	return ros_time_from_ns(stamp_ns);
 }
 
 ros::Time UAS::synchronise_stamp(uint64_t time_usec) {
-	uint64_t offset_ns = time_offset;
+	int64_t offset_ns = time_offset;
 
-	if (offset_ns > 0 || tsync_mode == timesync_mode::PASSTHROUGH) {
-		uint64_t stamp_ns = time_usec * 1000UL + offset_ns;
-		return ros_time_from_ns(stamp_ns);
-	}
-	else
-		return ros::Time::now();
+	// offset can be either positive or negative
+	uint64_t stamp_ns = time_usec * 1000UL + offset_ns;
+	return ros_time_from_ns(stamp_ns);
+
 }
 

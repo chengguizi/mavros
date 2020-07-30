@@ -171,6 +171,7 @@ public:
 
 		// 
 		nh.param<std::string>("conn/clock_source", clock_source, "monotonic");
+		ROS_INFO_STREAM_NAMED("time", "TM: clock source: " << clock_source);
 
 		nh.param<std::string>("time/time_ref_source", time_ref_source, "fcu");
 		nh.param<std::string>("time/timesync_mode", ts_mode_str, "MAVLINK");
@@ -359,6 +360,7 @@ private:
 		UAS_FCU(m_uas)->send_message_ignore_drop(tsync);
 	}
 
+	// hm: offset_ns is the offset respect to the FCU
 	void add_timesync_observation(int64_t offset_ns, uint64_t local_time_ns, uint64_t remote_time_ns)
 	{
 		uint64_t now_ns = get_time_now();
@@ -403,6 +405,7 @@ private:
 				add_sample(offset_ns);
 
 				// Save time offset for other components to use
+				// hm: this offset will convert FCU time to OBC time
 				m_uas->set_time_offset(sync_converged() ? time_offset : 0);
 
 				// Increment sequence counter after filter update
@@ -430,7 +433,7 @@ private:
 		// Publish timesync status
 		auto timesync_status = boost::make_shared<mavros_msgs::TimesyncStatus>();
 
-		timesync_status->header.stamp = ros::Time::now();
+		timesync_status->header.stamp = ros::Time().fromNSec(now_ns);
 		timesync_status->remote_timestamp_ns = remote_time_ns;
 		timesync_status->observed_offset_ns = offset_ns;
 		timesync_status->estimated_offset_ns = time_offset;
