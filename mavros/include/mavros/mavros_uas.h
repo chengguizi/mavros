@@ -296,11 +296,14 @@ public:
 
 	/* -*- time sync -*- */
 
-	inline void set_time_offset(uint64_t offset_ns) {
+	inline void set_time_offset(int64_t offset_ns) {
+
+		if (time_offset == 0)
+			ROS_INFO_STREAM_NAMED("UAS", "Time offset between FCU and OBC has been initialised to " << time_offset << " ns");
 		time_offset = offset_ns;
 	}
 
-	inline uint64_t get_time_offset(void) {
+	inline int64_t get_time_offset(void) {
 		return time_offset;
 	}
 
