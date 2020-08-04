@@ -406,7 +406,8 @@ private:
 
 				// Save time offset for other components to use
 				// hm: this offset will convert FCU time to OBC time
-				m_uas->set_time_offset(sync_converged() ? time_offset : 0);
+				if (sync_converged())
+					m_uas->set_time_offset(time_offset);
 
 				// Increment sequence counter after filter update
 				sequence++;
