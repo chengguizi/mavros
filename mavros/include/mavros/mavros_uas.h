@@ -299,7 +299,7 @@ public:
 	inline void set_time_offset(int64_t offset_ns) {
 
 		if (time_offset == 0)
-			ROS_INFO_STREAM_NAMED("UAS", "Time offset between FCU and OBC has been initialised to " << offset_ns << " ns");
+			ROS_INFO_STREAM_NAMED("UAS", "Time offset between FCU and OBC has been initialised to " << double(offset_ns) / 1e9 << " sec");
 		time_offset = offset_ns;
 	}
 

@@ -408,6 +408,11 @@ private:
 				// hm: this offset will convert FCU time to OBC time
 				if (sync_converged())
 					m_uas->set_time_offset(time_offset);
+				else
+				{
+					ROS_INFO_STREAM_THROTTLE(5,"Time sync in progress " << sequence << "/" << convergence_window );
+				}
+				
 
 				// Increment sequence counter after filter update
 				sequence++;
@@ -470,6 +475,7 @@ private:
 	{
 		// Do a full reset of all statistics and parameters
 		sequence = 0;
+		m_uas->set_time_offset(0);
 		time_offset = 0.0;
 		time_skew = 0.0;
 		filter_alpha = filter_alpha_initial;
