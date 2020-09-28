@@ -10,8 +10,10 @@
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />
 
+	<!-- You should only remap either vision_pose or odometry, but not both -->
 	<!-- /mavros/vision_pose/pose is posestamped, where /mavros/vision_pose/pose is posewithcovariancestamped -->
-	<remap from="/mavros/vision_pose/pose" to="/basalt/pose_enu" />
+	<!-- <remap from="/mavros/vision_pose/pose" to="/basalt/pose_enu" /> -->
+	<remap from="/mavros/odometry/out" to="/basalt/odom_ned" />
 
 	<include file="$(find mavros)/launch/node.launch">
 		<arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
