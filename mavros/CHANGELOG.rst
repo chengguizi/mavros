@@ -2,6 +2,56 @@
 Changelog for package mavros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2021-01-04)
+------------------
+* Fix tests for renaming of ECEF cases
+  Introduced in 6234af29
+* Initialise message structures
+  Uninitialised Mavlink 2 extension fields were sent if the fields were
+  not later set. Initialising the fields to zero is the default value for
+  extension fields and appears to the receiver as though sender is unaware
+  of Mavlink 2.
+  Instances were found with regex below, more may exist:
+  mavlink::[^:]+::msg::[^:={]+ ?[^:={]*;
+* Contributors: Rob Clarke
+
+1.5.0 (2020-11-11)
+------------------
+* mavros/sys_status: Fill flight_custom_version field
+* mavros: Add override specifiers
+* mavros: Move ECEF tf enums to separate enum class
+  This avoids a bunch of unhandled switch cases, and should
+  improve type safety a bit.
+* Contributors: Morten Fyhn Amundsen
+
+1.4.0 (2020-09-11)
+------------------
+* mavros: use mavlink::minimal:: after incompatible changes in mavlink package
+  Incompatible change: https://github.com/mavlink/mavlink/pull/1463
+  Fix: `#1483 <https://github.com/mavlink/mavros/issues/1483>`_, https://github.com/mavlink/mavlink/issues/1474
+* fixes based on vooon's review
+* fix issue what we couldn't set real parameters to 0.0 in mavros
+* Add error message
+* Fixed compilation error: publish std_msgs::String, not std::string for gcs_ip
+* Dispatch GCS IP address
+* Contributors: Artem Batalov, Marcelino, Morten Fyhn Amundsen, Vladimir Ermakov, Øystein Skotheim
+
+1.3.0 (2020-08-08)
+------------------
+* fake_gps.cpp: implement speed accuracy
+* fake_gps.cpp: Add mocap_withcovariance configuration parameter
+* fake_gps.cpp: add initial support for GPS_INPUT MAVLink message
+* apm.launch: Avoid warning:
+  Warning: You are using <arg> inside an <include> tag with the default=XY attribute - which is superfluous.
+  Use value=XY instead for less confusion.
+  Attribute name: respawn_mavros
+* Added support for MavProxy parameter file format
+* Ignore read-only parameters and statistics parameters in push operations
+* fix indentation
+* transform based on coordinate_frame
+* wind plugin: fix ArduPilot wind transformation
+* Contributors: Ben Wolsieffer, Dr.-Ing. Amilcar do Carmo Lucas, Yuan, Yuan Xu
+
 1.2.0 (2020-05-22)
 ------------------
 * has_capability only works for enums

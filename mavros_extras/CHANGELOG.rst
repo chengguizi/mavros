@@ -2,6 +2,56 @@
 Changelog for package mavros_extras
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2021-01-04)
+------------------
+* Initialise message structures
+  Uninitialised Mavlink 2 extension fields were sent if the fields were
+  not later set. Initialising the fields to zero is the default value for
+  extension fields and appears to the receiver as though sender is unaware
+  of Mavlink 2.
+  Instances were found with regex below, more may exist:
+  mavlink::[^:]+::msg::[^:={]+ ?[^:={]*;
+* Contributors: Rob Clarke
+
+1.5.0 (2020-11-11)
+------------------
+* mavros_extras: Fix member initialization order
+* mavros_extras: Add override specifiers
+* mavros_extras: distance_sensor: Don't publish data when orientation configuration does not match incomming data.
+* fake_gps: Fix assignment typo
+  This colon should probably be an equals sign.
+  With the colon, this assignment becomes a label instead,
+  and `_gps_rate` after the colon becomes an unused
+  expression result.
+* Contributors: Kristian Klausen, Morten Fyhn Amundsen
+
+1.4.0 (2020-09-11)
+------------------
+* mavros: use mavlink::minimal:: after incompatible changes in mavlink package
+  Incompatible change: https://github.com/mavlink/mavlink/pull/1463
+  Fix: `#1483 <https://github.com/mavlink/mavros/issues/1483>`_, https://github.com/mavlink/mavlink/issues/1474
+* play_tune: Assign tune format directly
+* play_tune: Uncrustify
+* play_tune: Use msg_set_target and set_string_z
+* play_tune: Write new plugin
+* Contributors: Morten Fyhn Amundsen, Vladimir Ermakov
+
+1.3.0 (2020-08-08)
+------------------
+* Take into account message count for message size
+* Add esc_status plugin.
+* fake_gps.cpp: Implement GPS time data
+* fake_gps.cpp: implement speed accuracy
+* fake_gps.cpp: Added horiz_accuracy and vert_accuracy parameters
+* fake_gps.cpp: Add mocap_withcovariance configuration parameter
+* fake_gps.cpp: add initial support for GPS_INPUT MAVLink message
+* fake_gps.cpp: uncrustify
+* Add gps_status plugin to publish GPS_RAW and GPS_RTK messages from FCU.
+  The timestamps for the gps_status topics take into account the mavlink time and uses the convienence function
+* uncrustify gps_rtk plugin
+* adding support for publishing rtkbaseline msgs over ROS
+* Contributors: CSCE439, Dr.-Ing. Amilcar do Carmo Lucas, Ricardo Marques
+
 1.2.0 (2020-05-22)
 ------------------
 * Revert "extras: odom: Hardcode BODY_FRD enum_value to fix compilation"

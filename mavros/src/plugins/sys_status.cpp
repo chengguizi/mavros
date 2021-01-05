@@ -38,9 +38,9 @@ using BatteryMsg = mavros_msgs::BatteryStatus;
 
 namespace mavros {
 namespace std_plugins {
-using mavlink::common::MAV_TYPE;
-using mavlink::common::MAV_AUTOPILOT;
-using mavlink::common::MAV_STATE;
+using mavlink::minimal::MAV_TYPE;
+using mavlink::minimal::MAV_AUTOPILOT;
+using mavlink::minimal::MAV_STATE;
 using utils::enum_value;
 
 /**
@@ -430,7 +430,7 @@ public:
 		conn_heartbeat_mav_type(MAV_TYPE::ONBOARD_CONTROLLER)
 	{ }
 
-	void initialize(UAS &uas_)
+	void initialize(UAS &uas_) override
 	{
 		PluginBase::initialize(uas_);
 
@@ -497,7 +497,7 @@ public:
 		enable_connection_cb();
 	}
 
-	Subscriptions get_subscriptions() {
+	Subscriptions get_subscriptions() override {
 		return {
 			make_handler(&SystemStatusPlugin::handle_heartbeat),
 			make_handler(&SystemStatusPlugin::handle_sys_status),
@@ -688,9 +688,9 @@ private:
 
 	/* -*- message handlers -*- */
 
-	void handle_heartbeat(const mavlink::mavlink_message_t *msg, mavlink::common::msg::HEARTBEAT &hb)
+	void handle_heartbeat(const mavlink::mavlink_message_t *msg, mavlink::minimal::msg::HEARTBEAT &hb)
 	{
-		using mavlink::common::MAV_MODE_FLAG;
+		using mavlink::minimal::MAV_MODE_FLAG;
 
 		// Store generic info of all heartbeats seen
 		auto it = find_or_create_vehicle_info(msg->sysid, msg->compid);
@@ -836,6 +836,7 @@ private:
 		it->second.middleware_sw_version = apv.middleware_sw_version;
 		it->second.os_sw_version = apv.os_sw_version;
 		it->second.board_version = apv.board_version;
+		it->second.flight_custom_version = custom_version_to_hex_string(apv.flight_custom_version);
 		it->second.vendor_id = apv.vendor_id;
 		it->second.product_id = apv.product_id;
 		it->second.uid = apv.uid;
@@ -952,7 +953,7 @@ private:
 		est_status_msg->gps_glitch_status_flag = !!(status.flags & enum_value(ESF::GPS_GLITCH));
 		est_status_msg->accel_error_status_flag = !!(status.flags & enum_value(ESF::ACCEL_ERROR));
 		// [[[end]]] (checksum: 7828381ee4002ea6b61a8f528ae4d12d)
-		
+
 		estimator_status_pub.publish(est_status_msg);
 	}
 
@@ -967,7 +968,7 @@ private:
 	{
 		using mavlink::common::MAV_MODE;
 
-		mavlink::common::msg::HEARTBEAT hb {};
+		mavlink::minimal::msg::HEARTBEAT hb {};
 
 		hb.type = enum_value(conn_heartbeat_mav_type); //! @todo patch PX4 so it can also handle this type as datalink
 		hb.autopilot = enum_value(MAV_AUTOPILOT::INVALID);
@@ -1071,7 +1072,7 @@ private:
 	bool set_rate_cb(mavros_msgs::StreamRate::Request &req,
 			mavros_msgs::StreamRate::Response &res)
 	{
-		mavlink::common::msg::REQUEST_DATA_STREAM rq;
+		mavlink::common::msg::REQUEST_DATA_STREAM rq = {};
 
 		rq.target_system = m_uas->get_tgt_system();
 		rq.target_component = m_uas->get_tgt_component();
@@ -1086,7 +1087,7 @@ private:
 	bool set_mode_cb(mavros_msgs::SetMode::Request &req,
 			mavros_msgs::SetMode::Response &res)
 	{
-		using mavlink::common::MAV_MODE_FLAG;
+		using mavlink::minimal::MAV_MODE_FLAG;
 
 		uint8_t base_mode = req.base_mode;
 		uint32_t custom_mode = 0;
@@ -1107,7 +1108,7 @@ private:
 			base_mode |= enum_value(MAV_MODE_FLAG::CUSTOM_MODE_ENABLED);
 		}
 
-		mavlink::common::msg::SET_MODE sm;
+		mavlink::common::msg::SET_MODE sm = {};
 		sm.target_system = m_uas->get_tgt_system();
 		sm.base_mode = base_mode;
 		sm.custom_mode = custom_mode;
