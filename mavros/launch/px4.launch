@@ -2,7 +2,8 @@
 	<!-- vim: set ft=xml noet : -->
 	<!-- example launch script for PX4 based FCU's -->
 
-	<arg name="fcu_url" default="/dev/ttyTHS1:921600" />
+	<arg name="fcu_url" default="/dev/ttyUSB0:2000000" />
+	<!-- <arg name="gcs_url" default="udp://:14540@192.168.31.164/" /> -->
 	<arg name="gcs_url" default="udp://:14540@192.168.1.137/" />
 	<arg name="tgt_system" default="23" />
 	<arg name="tgt_component" default="23" />
