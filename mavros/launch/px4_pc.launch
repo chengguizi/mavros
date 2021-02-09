@@ -2,20 +2,13 @@
 	<!-- vim: set ft=xml noet : -->
 	<!-- example launch script for PX4 based FCU's -->
 
-	<arg name="fcu_url" default="/dev/ttyUSB0:2000000" />
-	<!-- <arg name="gcs_url" default="udp://:14540@192.168.31.164/" /> -->
-	<!-- <arg name="gcs_url" default="udp://:14540@192.168.31.92/" /> -->
-	<arg name="gcs_url" default="udp://:14540@192.168.1.148/" />
-	<arg name="tgt_system" default="23" />
+	<arg name="fcu_url" default="/dev/ttyACM0:2000000" />
+	<arg name="gcs_url" default="udp://0.0.0.0:14535@" />
+	<arg name="tgt_system" default="1" />
 	<arg name="tgt_component" default="1" />
 	<arg name="log_output" default="screen" />
 	<arg name="fcu_protocol" default="v2.0" />
 	<arg name="respawn_mavros" default="false" />
-
-	<!-- You should only remap either vision_pose or odometry, but not both -->
-	<!-- /mavros/vision_pose/pose is posestamped, where /mavros/vision_pose/pose is posewithcovariancestamped -->
-	<!-- <remap from="/mavros/vision_pose/pose" to="/basalt/pose_enu" /> -->
-	<remap from="/mavros/odometry/out" to="/basalt/odom_ned" />
 
 	<include file="$(find mavros)/launch/node.launch">
 		<arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />

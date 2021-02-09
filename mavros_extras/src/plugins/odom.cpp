@@ -57,6 +57,7 @@ public:
 		// frame params:
 		odom_nh.param<std::string>("fcu/odom_parent_id_des", fcu_odom_parent_id_des, "map");
 		odom_nh.param<std::string>("fcu/odom_child_id_des", fcu_odom_child_id_des, "base_link");
+		odom_nh.param("estimator_type", estimator_type, 3);
 
 		// publishers
 		odom_pub = odom_nh.advertise<nav_msgs::Odometry>("in", 10);
@@ -79,6 +80,7 @@ private:
 
 	std::string fcu_odom_parent_id_des;			//!< desired orientation of the fcu odometry message's parent frame
 	std::string fcu_odom_child_id_des;			//!< desired orientation of the fcu odometry message's child frame
+	int estimator_type;
 
 	/**
 	 * @brief Lookup static transform with error handling
@@ -273,6 +275,9 @@ private:
 		msg.rollspeed = ang_vel.x();
 		msg.pitchspeed = ang_vel.y();
 		msg.yawspeed = ang_vel.z();
+
+		// for PX4 firmware verison 1.11+
+		msg.estimator_type = estimator_type;
 		// [[[end]]] (checksum: ead24a1a6a14496c9de6c1951ccfbbd7)
 
 		ftf::quaternion_to_mavlink(orientation, msg.q);

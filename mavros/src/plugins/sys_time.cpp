@@ -169,6 +169,10 @@ public:
 			conn_timesync = ros::Duration(ros::Rate(conn_timesync_d));
 		}
 
+		// 
+		nh.param<std::string>("conn/clock_source", clock_source, "monotonic");
+		ROS_INFO_STREAM_NAMED("time", "TM: clock source: " << clock_source);
+
 		nh.param<std::string>("time/time_ref_source", time_ref_source, "fcu");
 		nh.param<std::string>("time/timesync_mode", ts_mode_str, "MAVLINK");
 
@@ -256,6 +260,7 @@ private:
 
 	TimeSyncStatus dt_diag;
 
+	std::string clock_source;
 	std::string time_ref_source;
 
 	// Estimated statistics
@@ -293,7 +298,7 @@ private:
 			ros::Time time_ref(
 						mtime.time_unix_usec / 1000000,		// t_sec
 						(mtime.time_unix_usec % 1000000) * 1000);	// t_nsec
-
+			
 			time_unix->header.stamp = ros::Time::now();
 			time_unix->time_ref = time_ref;
 			time_unix->source = time_ref_source;
@@ -307,7 +312,7 @@ private:
 
 	void handle_timesync(const mavlink::mavlink_message_t *msg, mavlink::common::msg::TIMESYNC &tsync)
 	{
-		uint64_t now_ns = ros::Time::now().toNSec();
+		uint64_t now_ns = get_time_now();
 
 		if (tsync.tc1 == 0) {
 			send_timesync_msg(now_ns, tsync.ts1);
@@ -316,14 +321,15 @@ private:
 		else if (tsync.tc1 > 0) {
 			// Time offset between this system and the remote system is calculated assuming RTT for
 			// the timesync packet is roughly equal both ways.
-			add_timesync_observation((tsync.ts1 + now_ns - tsync.tc1 * 2) / 2, tsync.ts1, tsync.tc1);
+			int64_t midway_ns = (tsync.ts1 + (int64_t)now_ns) / 2; // implicit conversion to int64, from uint64
+			add_timesync_observation(midway_ns - tsync.tc1, tsync.ts1, tsync.tc1);
 		}
 	}
 
 	void sys_time_cb(const ros::TimerEvent &event)
 	{
 		// For filesystem only
-		uint64_t time_unix_usec = ros::Time::now().toNSec() / 1000;	// nano -> micro
+		uint64_t time_unix_usec = get_time_now() / 1000;
 
 		mavlink::common::msg::SYSTEM_TIME mtime {};
 		mtime.time_unix_usec = time_unix_usec;
@@ -335,7 +341,7 @@ private:
 	{
 		auto ts_mode = m_uas->get_timesync_mode();
 		if (ts_mode == TSM::MAVLINK) {
-			send_timesync_msg(0, ros::Time::now().toNSec());
+			send_timesync_msg(0, get_time_now());
 		} else if (ts_mode == TSM::ONBOARD) {
 			// Calculate offset between CLOCK_REALTIME (ros::WallTime) and CLOCK_MONOTONIC
 			uint64_t realtime_now_ns = ros::Time::now().toNSec();
@@ -354,9 +360,10 @@ private:
 		UAS_FCU(m_uas)->send_message_ignore_drop(tsync);
 	}
 
+	// hm: offset_ns is the offset respect to the FCU
 	void add_timesync_observation(int64_t offset_ns, uint64_t local_time_ns, uint64_t remote_time_ns)
 	{
-		uint64_t now_ns = ros::Time::now().toNSec();
+		uint64_t now_ns = get_time_now();
 
 		// Calculate the round trip time (RTT) it took the timesync packet to bounce back to us from remote system
 		uint64_t rtt_ns = now_ns - local_time_ns;
@@ -398,7 +405,14 @@ private:
 				add_sample(offset_ns);
 
 				// Save time offset for other components to use
-				m_uas->set_time_offset(sync_converged() ? time_offset : 0);
+				// hm: this offset will convert FCU time to OBC time
+				if (sync_converged())
+					m_uas->set_time_offset(time_offset);
+				else
+				{
+					ROS_INFO_STREAM_THROTTLE(5,"Time sync in progress " << sequence << "/" << convergence_window );
+				}
+				
 
 				// Increment sequence counter after filter update
 				sequence++;
@@ -425,7 +439,7 @@ private:
 		// Publish timesync status
 		auto timesync_status = boost::make_shared<mavros_msgs::TimesyncStatus>();
 
-		timesync_status->header.stamp = ros::Time::now();
+		timesync_status->header.stamp = ros::Time().fromNSec(now_ns);
 		timesync_status->remote_timestamp_ns = remote_time_ns;
 		timesync_status->observed_offset_ns = offset_ns;
 		timesync_status->estimated_offset_ns = time_offset;
@@ -461,6 +475,7 @@ private:
 	{
 		// Do a full reset of all statistics and parameters
 		sequence = 0;
+		m_uas->set_time_offset(0);
 		time_offset = 0.0;
 		time_skew = 0.0;
 		filter_alpha = filter_alpha_initial;
@@ -474,7 +489,19 @@ private:
 		return sequence >= convergence_window;
 	}
 
-	uint64_t get_monotonic_now(void)
+	inline uint64_t get_time_now()
+	{
+		if (clock_source == "monotonic"){
+			return get_monotonic_now();
+		}else if (clock_source == "realtime"){
+			return ros::Time::now().toNSec();
+		}else
+			throw std::runtime_error("Unkown Clock Source");
+
+		return 0;
+	}
+
+	inline uint64_t get_monotonic_now(void)
 	{
 		struct timespec spec;
 		clock_gettime(CLOCK_MONOTONIC, &spec);
